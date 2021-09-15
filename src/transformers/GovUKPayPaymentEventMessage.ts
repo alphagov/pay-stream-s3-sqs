@@ -44,15 +44,19 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 	// put these in `event_data`
 	for (const paymentEventMessageKey in message) {
 
-		const paymentEventMessageValue = message[paymentEventMessageKey] &&
+		let paymentEventMessageValue = message[paymentEventMessageKey] &&
 			(typeof message[paymentEventMessageKey] === 'string') ? message[paymentEventMessageKey].trim() : message[paymentEventMessageKey]
+
+		if (paymentEventMessageKey === 'requires_3ds') {
+			paymentEventMessageValue = message[paymentEventMessageKey] === true || message[paymentEventMessageKey] === 'true'
+		}
 
 		if (paymentEventMessageValue) {
 
 			// support only 1 level of nesting for second level attributes
 			if (paymentEventMessageKey.includes('.')) {
 				const [ topLevelKey, nestedKey ] = paymentEventMessageKey.split('.')
-				const nestedObject: { [key: string]: string } = {}
+				const nestedObject: { [key: string]: any } = {}
 
 				nestedObject[nestedKey] = paymentEventMessageValue
 				formatted.event_details[topLevelKey] = nestedObject
