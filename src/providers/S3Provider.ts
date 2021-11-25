@@ -5,7 +5,7 @@ import S3, { SelectObjectContentRequest, RecordsEvent, StatsEvent, ProgressEvent
 import { Provider, Message, ProgressPage } from './Provider'
 import { AWSError } from 'aws-sdk/lib/error'
 
-const s3 = new S3()
+const s3 = new S3({endpoint: 'http://localstack:4566', s3ForcePathStyle: true})
 
 // S3 ObjectContent request `Payload` doesn't seem to be playing well with Typescript definition, manually define
 // event type until bug has been fixed

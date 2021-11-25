@@ -8,7 +8,7 @@ import Transformer from './../transformers/Transformer'
 import logger from '../utils/logger'
 import { AWSError } from 'aws-sdk/lib/error'
 
-const sqs = new SQS()
+const sqs = new SQS({endpoint: 'http://localstack:4566'})
 
 export default class SQSConsumer implements Consumer {
 	queueUrl: string

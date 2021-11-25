@@ -1,0 +1,2 @@
+"transaction_id","transaction_type","event_name","event_date","refund_status","refund_amount_refunded","refund_amount_available","fee","net_amount","captured_date","reason","admin_github_id"
+"tpc10pv3mtnkvs739vl2vdmoeq","payment","PAYMENT_STATUS_CORRECTED_TO_SUCCESS_BY_ADMIN","2021-08-25T13:30:00.000000Z","available","0","12","12","0","2021-08-23T09:37:16.000Z","Correct charge status fixed for ZD-4677848 for transaction <=12p","Jonathan Harden (jfharden)"

@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  stream-s3-sqs:
+    build: ../.
+    environment:
+      AWS_REGION: eu-west-1
+      PROVIDER_S3_BUCKET_NAME: test-bucket
+      CONSUMER_SQS_QUEUE_URL: test-queue
+      PROVIDER_S3_SOURCE_FILE: test-message
+      AWS_ACCESS_KEY_ID: foo
+      AWS_SECRET_ACCESS_KEY: bar # pragma: allowlist secret
+    entrypoint: /stream-s3-sqs-entrypoint.sh
+    volumes:
+      - "./stream-s3-sqs-entrypoint.sh:/stream-s3-sqs-entrypoint.sh"
+    depends_on:
+      - localstack
+
+    command: ["node", "out/process"]
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      # LocalStack env vars
+      - HOSTNAME_EXTERNAL=localstack
+      - DEFAULT_REGION=eu-west-1
+      - SERVICES=s3,sqs
+      - DEBUG=0
+      - DATA_DIR=/tmp/localstack
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+      # Setup env vars
+      - PAY_BUCKET_NAME=test-bucket
+      - PAY_QUEUE_NAME=test-queue
+    volumes:
+      - "./localstack/setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh"
+      - "./localstack/test-message:/test-message"
+
+volumes:
+  localstack:
+    driver: local
