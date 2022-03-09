@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  unit-tests:
+  test:
     runs-on: ubuntu-18.04
     name: Unit tests
 
@@ -35,3 +35,11 @@ jobs:
         run: npm run lint
       - name: Run unit tests
         run: npm test
+
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: test
+    name: Release
+    permissions:
+      contents: write
+    uses: alphagov/pay-ci/.github/workflows/_create-alpha-release-tag.yml@master        
