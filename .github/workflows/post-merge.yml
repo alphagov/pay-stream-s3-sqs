@@ -10,11 +10,10 @@ permissions:
 
 jobs:
   tests:
-    uses: .github/workflows/run-tests.yml@master
+    uses: ./.github/workflows/run-tests.yml
 
   release:
-    if: github.ref == 'refs/heads/master'
-    needs: tests
+    needs: test
     name: Release
     permissions:
       contents: write

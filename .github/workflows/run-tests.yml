@@ -2,6 +2,7 @@ name: Github Actions Tests
 
 on:
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
