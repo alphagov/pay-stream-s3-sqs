@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/run-tests.yml
 
   release:
-    needs: test
+    needs: tests
     name: Release
     permissions:
       contents: write
