@@ -1,9 +1,6 @@
 name: Github Actions Tests
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
 
 permissions:
@@ -35,11 +32,3 @@ jobs:
         run: npm run lint
       - name: Run unit tests
         run: npm test
-
-  release:
-    if: github.ref == 'refs/heads/master'
-    needs: test
-    name: Release
-    permissions:
-      contents: write
-    uses: alphagov/pay-ci/.github/workflows/_create-alpha-release-tag.yml@master        

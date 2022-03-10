@@ -1,0 +1,21 @@
+name: Post merge
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    uses: .github/workflows/run-tests.yml@master
+
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: tests
+    name: Release
+    permissions:
+      contents: write
+    uses: alphagov/pay-ci/.github/workflows/_create-alpha-release-tag.yml@master        
