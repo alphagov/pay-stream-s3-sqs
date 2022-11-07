@@ -1,4 +1,4 @@
-FROM node:16.17.1-alpine3.16@sha256:36a2210b84cde8351597b420896d4dc071bfe5fb64552b60516422a768f90e9d
+FROM node:19.0.0-alpine3.16@sha256:1a04e2ec39cc0c3a9657c1d6f8291ea2f5ccadf6ef4521dec946e522833e87ea
 COPY package.json package-lock.json ./
 COPY src/ src
 COPY tsconfig.json tsconfig.json
