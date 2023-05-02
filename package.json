@@ -19,7 +19,7 @@
     "node": "^16.14.2"
   },
   "dependencies": {
-    "aws-sdk": "^2.1365.0",
+    "aws-sdk": "^2.1369.0",
     "winston": "3.8.2"
   },
   "devDependencies": {
