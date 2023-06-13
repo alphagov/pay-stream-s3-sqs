@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.1396.0",
-    "winston": "3.8.2"
+    "winston": "3.9.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.0",
