@@ -1,4 +1,4 @@
-FROM node:18.18.2-alpine3.18@sha256:0fe7402d11d8c85474c6ec6f9c9c8048cd0549c95535832b7f0735a4b47690a5 AS builder
+FROM node:18.18.2-alpine3.18@sha256:435dcad253bb5b7f347ebc69c8cc52de7c912eb7241098b920f2fc2d7843183d AS builder
 RUN apk -U upgrade --available
 COPY package.json package-lock.json ./
 COPY src/ src
