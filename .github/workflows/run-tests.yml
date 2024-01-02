@@ -40,3 +40,6 @@ jobs:
         run: npm run lint
       - name: Run unit tests
         run: npm test
+
+  check-docker-base-images-are-manifests:
+    uses: alphagov/pay-ci/.github/workflows/_validate_docker_image_is_manifest.yml@master
