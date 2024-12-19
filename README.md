@@ -21,4 +21,4 @@ message JSON object with the field names expected by ledger.
 
 ## Deployment
 
-Changes are automatically deployed. See https://pay-team-manual.cloudapps.digital/manual/how-to/ad-hoc-tasks.html#deploying-transaction-updater for more details.
+Changes are automatically deployed. See https://manual.payments.service.gov.uk/manual/how-to/ad-hoc-tasks.html#deploying-transaction-updater for more details.
