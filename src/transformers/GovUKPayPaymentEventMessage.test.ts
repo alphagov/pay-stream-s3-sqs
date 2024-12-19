@@ -14,17 +14,14 @@ describe('message formatter', () => {
 		'will_have_empty_space': ' some-empty-space-values ',
 		'value_omitted': '',
 		'value_included': 'some-value',
+		'boolean_string_with_spaces_true': '		TruE	',
+		'boolean_string_with_spaces_false': '		fAlSE		',
 		'boolean_string_lowercase_true': 'true',
 		'boolean_string_uppercase_true': 'TRUE',
 		'boolean_string_lowercase_false': 'false',
 		'boolean_string_uppercase_false': 'FALSE',
 		'empty_column': ''
 	}
-
-	// @ts-ignore
-	messageFromS3Csv["boolean_value"] = true
-	// @ts-ignore
-	messageFromS3Csv["numeric_value"] = 123
 
 	const messageBuilder = new GovUKPayPaymentEventMessage()
 
@@ -41,8 +38,8 @@ describe('message formatter', () => {
 		expect(body).toHaveProperty('reproject_domain_object', true)
 		expect(body).toHaveProperty('service_id')
 		expect(body).toHaveProperty('live', true)
-		expect(body).toHaveProperty('event_details.boolean_value', true)
-		expect(body).toHaveProperty('event_details.numeric_value', 123)
+		expect(body).toHaveProperty('event_details.boolean_string_with_spaces_true', true)
+		expect(body).toHaveProperty('event_details.boolean_string_with_spaces_false', false)
 		expect(body).toHaveProperty('event_details.boolean_string_lowercase_true', true)
 		expect(body).toHaveProperty('event_details.boolean_string_uppercase_true', true)
 		expect(body).toHaveProperty('event_details.boolean_string_lowercase_false', false)
