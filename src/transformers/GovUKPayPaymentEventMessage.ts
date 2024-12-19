@@ -1,11 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */ 
 import crypto from 'crypto'
 import SQS from 'aws-sdk/clients/sqs'
 import Transformer from './Transformer'
-import { Message } from './../providers/Provider'
+import { Message, MessageValue } from './../providers/Provider'
+
+type PaymentEventMessageValue = string | boolean
+type PaymentEventDetails = { [key: string]: PaymentEventMessageValue | { [key: string]: PaymentEventMessageValue } }
 
 interface PaymentEventMessage {
-	event_details: { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+	event_details: PaymentEventDetails,
 	resource_type?: string;
 	resource_external_id?: string;
 	event_date?: string;
@@ -14,7 +16,7 @@ interface PaymentEventMessage {
 	reproject_domain_object?: boolean;
 	service_id?: string;
 	live?: string;
-	[key: string]: string | boolean | { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+	[key: string]: PaymentEventMessageValue | PaymentEventDetails
 }
 
 interface ReservedKeys {
@@ -44,7 +46,7 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 			continue
 		}
 
-		const reservedEntry: string = message[reserved.key].trim()
+		const reservedEntry: MessageValue = message[reserved.key].trim()
 
 		if (!reservedEntry) {
 			continue
@@ -61,31 +63,32 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 
 	// any remaining properties will override attributes of the transaction itself
 	// put these in `event_data`
-	for (const paymentEventMessageKey in message) {
+	for (const [ eventMessageKey, eventMessageValue ] of Object.entries(message)) {
+		const trimmedMessageValue: MessageValue = eventMessageValue.trim()
 
-		let paymentEventMessageValue: any = message[paymentEventMessageKey]
-		if (typeof paymentEventMessageValue === 'string') {
-			paymentEventMessageValue = paymentEventMessageValue.trim()
-			if (paymentEventMessageValue.toLocaleLowerCase() == 'true' || paymentEventMessageValue.toLocaleLowerCase() == 'false') {
-				paymentEventMessageValue = paymentEventMessageValue.toLocaleLowerCase() == 'true'
-			}
+		if (trimmedMessageValue.length === 0) {
+			continue
 		}
 
-		if (paymentEventMessageValue !== undefined && paymentEventMessageValue !== '') {
-
-			// support only 1 level of nesting for second level attributes
-			if (paymentEventMessageKey.includes('.')) {
-				const [ topLevelKey, nestedKey ] = paymentEventMessageKey.split('.')
-				const nestedObject: { [key: string]: any } = {}
-
-				nestedObject[nestedKey] = paymentEventMessageValue
-				formatted.event_details[topLevelKey] = nestedObject
-			} else {
-				formatted.event_details[paymentEventMessageKey] = paymentEventMessageValue
+		// support only 1 level of nesting for second level attributes
+		if (eventMessageKey.includes('.')) {
+			const [ topLevelKey, nestedKey ] = eventMessageKey.split('.')
+			formatted.event_details[topLevelKey] = {
+				[nestedKey]: parseMessageValue(trimmedMessageValue)
 			}
+		} else {
+			formatted.event_details[eventMessageKey] = parseMessageValue(trimmedMessageValue)
 		}
 	}
 	return formatted
+}
+
+function parseMessageValue(messageValue: MessageValue): PaymentEventMessageValue {
+	if (messageValue.toLocaleLowerCase() === 'true' || messageValue.toLocaleLowerCase() === 'false') {
+		return messageValue.toLocaleLowerCase() === 'true'
+	}
+
+	return messageValue
 }
 
 export default class GovUkPayPaymentEventMessage implements Transformer {
