@@ -16,7 +16,13 @@ interface PaymentEventMessage {
 	reproject_domain_object?: boolean;
 	service_id?: string;
 	live?: string;
-	[key: string]: any | { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+	[key: string]: string | boolean | { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+}
+
+interface ReservedKeys {
+	key: string,
+	target: string,
+	targetBoolean?: boolean
 }
 
 // we can gaurantee the existence of required fields as anything with permissions
@@ -26,7 +32,7 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 		console.log(`Transformer incoming message: ${JSON.stringify(message)}`)
 	}
 
-	const reservedKeys = [
+	const reservedKeys: ReservedKeys[] = [
 		{ key: 'transaction_id', target: 'resource_external_id' },
 		{ key: 'parent_transaction_id', target: 'parent_resource_external_id' },
 		{ key: 'transaction_type', target: 'resource_type' },
@@ -40,14 +46,23 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 
 	// initially extract the reserved properties
 	for (const reserved of reservedKeys) {
-		let reservedEntry: any = message[reserved.key] && message[reserved.key].trim()
-		if (reservedEntry) {
-			if (reserved.targetBoolean) {
-				reservedEntry = reservedEntry.toLocaleLowerCase() == 'true'
-			}
-			formatted[reserved.target] = reservedEntry
-			delete message[reserved.key]
+		if (!Object.hasOwn(message, reserved.key)) {
+			continue
 		}
+
+		const reservedEntry: string = message[reserved.key].trim()
+
+		if (!reservedEntry) {
+			continue
+		}
+
+		if (reserved.targetBoolean) {
+			formatted[reserved.target] = reservedEntry.toLocaleLowerCase() === 'true'
+		} else {
+			formatted[reserved.target] = reservedEntry
+		}
+
+		delete message[reserved.key]
 	}
 
 	// any remaining properties will override attributes of the transaction itself
