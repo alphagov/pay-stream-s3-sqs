@@ -23,7 +23,7 @@ interface PaymentEventMessage {
 // to this resource will be validating data entry
 function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 	if (DEBUG) {
-		console.log(`Transformer incoming message: ${message}`)
+		console.log(`Transformer incoming message: ${JSON.stringify(message)}`)
 	}
 
 	const reservedKeys = [
@@ -78,7 +78,7 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 	}
 
 	if (DEBUG) {
-		console.log(`Transformer outgoing formatted message: ${formatted}`)
+		console.log(`Transformer outgoing formatted message: ${JSON.stringify(formatted)}`)
 	}
 	return formatted
 }
