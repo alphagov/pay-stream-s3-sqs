@@ -1,13 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */ 
 import crypto from 'crypto'
 import SQS from 'aws-sdk/clients/sqs'
 import Transformer from './Transformer'
-import { Message } from './../providers/Provider'
+import { Message, MessageValue } from './../providers/Provider'
+
+type PaymentEventMessageValue = string | boolean
+type PaymentEventDetails = { [key: string]: PaymentEventMessageValue | { [key: string]: PaymentEventMessageValue } }
 
 const DEBUG: boolean = process.env['DEBUG'] === 'true' || false
 
 interface PaymentEventMessage {
-	event_details: { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+	event_details: PaymentEventDetails,
 	resource_type?: string;
 	resource_external_id?: string;
 	event_date?: string;
@@ -16,7 +18,13 @@ interface PaymentEventMessage {
 	reproject_domain_object?: boolean;
 	service_id?: string;
 	live?: string;
-	[key: string]: any | { [key: string]: string } | { [key: string]: { [key: string]: string }  };
+	[key: string]: PaymentEventMessageValue | PaymentEventDetails
+}
+
+interface ReservedKeys {
+	key: string,
+	target: string,
+	targetBoolean?: boolean
 }
 
 // we can gaurantee the existence of required fields as anything with permissions
@@ -26,7 +34,7 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 		console.log(`Transformer incoming message: ${JSON.stringify(message)}`)
 	}
 
-	const reservedKeys = [
+	const reservedKeys: ReservedKeys[] = [
 		{ key: 'transaction_id', target: 'resource_external_id' },
 		{ key: 'parent_transaction_id', target: 'parent_resource_external_id' },
 		{ key: 'transaction_type', target: 'resource_type' },
@@ -40,40 +48,42 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 
 	// initially extract the reserved properties
 	for (const reserved of reservedKeys) {
-		let reservedEntry: any = message[reserved.key] && message[reserved.key].trim()
-		if (reservedEntry) {
-			if (reserved.targetBoolean) {
-				reservedEntry = reservedEntry.toLocaleLowerCase() == 'true'
-			}
-			formatted[reserved.target] = reservedEntry
-			delete message[reserved.key]
+		if (!Object.hasOwn(message, reserved.key)) {
+			continue
 		}
+
+		const reservedEntry: MessageValue = message[reserved.key].trim()
+
+		if (!reservedEntry) {
+			continue
+		}
+
+		if (reserved.targetBoolean) {
+			formatted[reserved.target] = reservedEntry.toLocaleLowerCase() === 'true'
+		} else {
+			formatted[reserved.target] = reservedEntry
+		}
+
+		delete message[reserved.key]
 	}
 
 	// any remaining properties will override attributes of the transaction itself
 	// put these in `event_data`
-	for (const paymentEventMessageKey in message) {
+	for (const [ eventMessageKey, eventMessageValue ] of Object.entries(message)) {
+		const trimmedMessageValue: MessageValue = eventMessageValue.trim()
 
-		let paymentEventMessageValue: any = message[paymentEventMessageKey]
-		if (typeof paymentEventMessageValue === 'string') {
-			paymentEventMessageValue = paymentEventMessageValue.trim()
-			if (paymentEventMessageValue.toLocaleLowerCase() == 'true' || paymentEventMessageValue.toLocaleLowerCase() == 'false') {
-				paymentEventMessageValue = paymentEventMessageValue.toLocaleLowerCase() == 'true'
-			}
+		if (trimmedMessageValue.length === 0) {
+			continue
 		}
 
-		if (paymentEventMessageValue !== undefined && paymentEventMessageValue !== '') {
-
-			// support only 1 level of nesting for second level attributes
-			if (paymentEventMessageKey.includes('.')) {
-				const [ topLevelKey, nestedKey ] = paymentEventMessageKey.split('.')
-				const nestedObject: { [key: string]: any } = {}
-
-				nestedObject[nestedKey] = paymentEventMessageValue
-				formatted.event_details[topLevelKey] = nestedObject
-			} else {
-				formatted.event_details[paymentEventMessageKey] = paymentEventMessageValue
+		// support only 1 level of nesting for second level attributes
+		if (eventMessageKey.includes('.')) {
+			const [ topLevelKey, nestedKey ] = eventMessageKey.split('.')
+			formatted.event_details[topLevelKey] = {
+				[nestedKey]: parseMessageValue(trimmedMessageValue)
 			}
+		} else {
+			formatted.event_details[eventMessageKey] = parseMessageValue(trimmedMessageValue)
 		}
 	}
 
@@ -81,6 +91,14 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 		console.log(`Transformer outgoing formatted message: ${JSON.stringify(formatted)}`)
 	}
 	return formatted
+}
+
+function parseMessageValue(messageValue: MessageValue): PaymentEventMessageValue {
+	if (messageValue.toLocaleLowerCase() === 'true' || messageValue.toLocaleLowerCase() === 'false') {
+		return messageValue.toLocaleLowerCase() === 'true'
+	}
+
+	return messageValue
 }
 
 export default class GovUkPayPaymentEventMessage implements Transformer {

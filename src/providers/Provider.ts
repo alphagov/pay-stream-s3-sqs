@@ -1,5 +1,6 @@
 import { Readable } from 'stream'
-export type Message = { [key: string]: string }
+export type MessageValue = string
+export type Message = { [key: string]: MessageValue }
 export interface ProgressPage {
 	messages: Message[];
 	progress: number;
