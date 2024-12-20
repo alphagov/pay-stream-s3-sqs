@@ -4,6 +4,8 @@ import SQS from 'aws-sdk/clients/sqs'
 import Transformer from './Transformer'
 import { Message } from './../providers/Provider'
 
+const DEBUG: boolean = process.env['DEBUG'] === 'true' || false
+
 interface PaymentEventMessage {
 	event_details: { [key: string]: string } | { [key: string]: { [key: string]: string }  };
 	resource_type?: string;
@@ -20,6 +22,10 @@ interface PaymentEventMessage {
 // we can gaurantee the existence of required fields as anything with permissions
 // to this resource will be validating data entry
 function formatPaymentEventMessage(message: Message): PaymentEventMessage {
+	if (DEBUG) {
+		console.log(`Transformer incoming message: ${message}`)
+	}
+
 	const reservedKeys = [
 		{ key: 'transaction_id', target: 'resource_external_id' },
 		{ key: 'parent_transaction_id', target: 'parent_resource_external_id' },
@@ -69,6 +75,10 @@ function formatPaymentEventMessage(message: Message): PaymentEventMessage {
 				formatted.event_details[paymentEventMessageKey] = paymentEventMessageValue
 			}
 		}
+	}
+
+	if (DEBUG) {
+		console.log(`Transformer outgoing formatted message: ${formatted}`)
 	}
 	return formatted
 }
