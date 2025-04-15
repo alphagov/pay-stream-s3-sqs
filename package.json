@@ -1,6 +1,6 @@
 {
   "name": "stream-s3-sqs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "src/process.ts",
   "scripts": {
@@ -16,7 +16,7 @@
   "author": "Steven Fountain",
   "license": "ISC",
   "engines": {
-    "node": "^18.20.4"
+    "node": "^22.14.0"
   },
   "dependencies": {
     "aws-sdk": "^2.1396.0",
