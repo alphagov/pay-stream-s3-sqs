@@ -1,4 +1,4 @@
-FROM node:22.21.0-alpine3.21@sha256:33daae47717b9b6107fd271e6608efe7c1bd1c9b448b3f30ce2f7027f5d96ffa
+FROM node:22.21.1-alpine3.21@sha256:5f2b71c056f3bfb48462f67d1d99fc59e580460e87f88a5fb6f203819c3e74bf
 RUN apk -U upgrade --available
 COPY package.json package-lock.json ./
 COPY src/ src
